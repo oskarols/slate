@@ -198,6 +198,20 @@ static NSDictionary *unselectableApps = nil;
   ProcessSerialNumber psn;
   GetProcessForPID(focusPID, &psn);
   SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
+
+  // move cursor to the center of the newly-focused window
+  NSPoint wTL = [AccessibilityWrapper getTopLeftForWindow:window];
+  NSSize wSize = [AccessibilityWrapper getSizeForWindow:window];
+
+  CGEventRef move = CGEventCreateMouseEvent(
+      NULL, kCGEventMouseMoved,
+      CGPointMake(wTL.x + wSize.width / 2, wTL.y + wSize.height / 2),
+      kCGMouseButtonLeft // ignored
+  );
+
+  CGEventPost(kCGHIDEventTap, move);
+  CFRelease(move);
+
   return couldFocus;
 }
 
